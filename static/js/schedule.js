@@ -5,7 +5,7 @@ button.click(function() {
     $.post("/activate");
     setTimeout(function() {
         button.removeAttr('disabled');
-    }, 7000);
+    }, 2000);
 });
 
 function neededRows(parsedSchedule) {
@@ -32,6 +32,40 @@ function toFriendlyTime(hour, minute) {
     var minuteStr = minute.toString();
     if (minuteStr.length === 1) minuteStr = '0' + minuteStr;
     return hourStr + ':' + minuteStr + ' ' + amPm;
+}
+
+var ticker;
+var nextOccurrence = -1;
+
+function startTicker() {
+    ticker = setTimeout(function() {
+        showNextOccurrence();
+        startTicker();
+    }, 1000);
+}
+
+function showNextOccurrence() {
+    var countdown = $('#countdown');
+    if(nextOccurrence === -1) {
+        countdown.text('No recurrence schedule has been set yet!');
+    } else {
+        var mom = moment(nextOccurrence);
+        countdown.html('<b>Next recurrence:</b> ' + mom.format("h:mm A on dddd MMMM D, YYYY") + ' <i>(' + mom.fromNow() + ')</i>');
+    }
+
+    if(nextOccurrence > -1 && new Date().getTime() > nextOccurrence) {
+        clearTimeout(ticker);
+        console.log('Countdown reached, refreshing page');
+        countdown.text('Feeder will activate in a few seconds!');
+        nextOccurrence = -1;
+
+        var activateBtn = $('#activate');
+        activateBtn.attr('disabled', 'disabled');
+        setTimeout(function() {
+            activateBtn.removeAttr('disabled');
+            refresh();
+        }, 2000);
+    }
 }
 
 function displaySchedule(schedule) {
@@ -66,19 +100,17 @@ function displaySchedule(schedule) {
             }
         }
     }
+
+    startTicker();
 }
 
 function refresh() {
+    clearTimeout(ticker);
     $('#countdown').text('Loading...');
     $('tbody tr[id!=add-recurrence-row]').remove();
     get('/schedule', function(response, err) {
-        var countdown = $('#countdown');
-        if(response.next_occurrence === -1) {
-            countdown.text('No recurrence schedule has been set yet!');
-        } else {
-            var mom = moment(response.next_occurrence);
-            countdown.html('<b>Next recurrence:</b> ' + mom.format("h:mm A on dddd MMMM D, YYYY") + ' <i>(' + mom.fromNow() + ')</i>');
-        }
+        nextOccurrence = response.next_occurrence;
+        showNextOccurrence();
         displaySchedule(response.schedule);
     });
 }
