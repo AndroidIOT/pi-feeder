@@ -38,6 +38,7 @@ var ticker;
 var nextOccurrence = -1;
 
 function startTicker() {
+    if(nextOccurrence == -1) return;
     ticker = setTimeout(function() {
         showNextOccurrence();
         startTicker();
