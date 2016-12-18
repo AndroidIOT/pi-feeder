@@ -38,6 +38,20 @@ def check_should_activate(recurrence):
     now = right_now()
     return int(recurrence.weekday()) == int(now.weekday()) and int(recurrence.hour) == int(now.hour) and int(recurrence.minute) == int(now.minute)
 
+def get_required_sleep():
+    """Helps sync up ticker delaying to run on 15 minute clock intervals (12:00, 12:15, 12:30, 12:45, 1:00, ...). Returns seconds."""
+    now = right_now()
+    if now.minute == 0 or now.minute == 15 or now.minute == 30 or now.minute == 45:
+        return (60 * 15) - now.second
+    elif now.minute < 15:
+        return ((15 - now.minute) * 60) - now.second
+    elif now.minute < 30:
+        return ((30 - now.minute) * 60) - now.second
+    elif now.minute < 45:
+        return ((45 - now.minute) * 60) - now.second
+    else:
+        return ((60 - now.minute) * 60) - now.second
+
 def ticker():
     """The ticker which checks if a schedule moment has been reached."""
     print("Started!")
@@ -49,7 +63,7 @@ def ticker():
                 MotorUtil().turn_motor()
         else:
             sleep(25)
-        sleep(20)
+        sleep(get_required_sleep())
     print("Ticker has quit!")
     return
 
