@@ -21,4 +21,6 @@ To run the server:
 $ python server.py
 ```
 
+If `python` won't impliclty use `python3`, you should run it with `python3 server.py`.
+
 This will run the HTTP server, create an admin account, and do any other required initial setup.
