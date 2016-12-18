@@ -1,0 +1,38 @@
+#content {
+    padding: 2% 3%;
+}
+
+#countdown {
+    margin-top: 16px;
+}
+
+.brand-logo {
+    margin-left: 3.2%;
+}
+
+hr {
+    display: block;
+    height: 1px;
+    border: 0;
+    border-top: 1px solid #eee;
+    margin: 1em 0;
+    padding: 0; 
+}
+
+.input-field, .row .col.s6 {
+    margin-left: 0 !important;
+    margin-top: 0 !important;
+}
+
+.row .col {
+    padding-left: 0 !important;
+}
+
+.input-field.col label.active {
+    left: 0;
+}
+
+.error {
+    color: #E53935;
+    margin-bottom: 24px;
+}
