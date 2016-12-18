@@ -61,8 +61,6 @@ def ticker():
             if check_should_activate(next_occurrence):
                 print("Schedule has triggered!")
                 MotorUtil().turn_motor()
-        else:
-            sleep(25)
         sleep(get_required_sleep())
     print("Ticker has quit!")
     return
