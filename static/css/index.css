@@ -16,10 +16,11 @@ hr {
     border: 0;
     border-top: 1px solid #eee;
     margin: 1em 0;
-    padding: 0; 
+    padding: 0;
 }
 
-.input-field, .row .col.s6 {
+.input-field,
+.row .col.s6 {
     margin-left: 0 !important;
     margin-top: 0 !important;
 }
@@ -41,4 +42,11 @@ hr {
     cursor: pointer;
     font-size: 18px;
     color: #E53935;
+}
+
+h4 {
+    padding-bottom: 0;
+    margin-bottom: 32px;
+    margin-top: 0;
+    padding-top: 0;
 }
