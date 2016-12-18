@@ -1,4 +1,3 @@
-
 var button = $('#activate');
 button.click(function() {
     button.attr('disabled', 'disabled');
@@ -10,9 +9,9 @@ button.click(function() {
 
 function neededRows(parsedSchedule) {
     var largest = 0;
-    for(var key in parsedSchedule) {
+    for (var key in parsedSchedule) {
         var ary = parsedSchedule[key];
-        if(ary.length > largest) {
+        if (ary.length > largest) {
             largest = ary.length;
         }
     }
@@ -21,9 +20,9 @@ function neededRows(parsedSchedule) {
 
 function toFriendlyTime(hour, minute) {
     var amPm = 'AM';
-    if(hour === 0) {
+    if (hour === 0) {
         hour = 12;
-    } else if(hour > 12) {
+    } else if (hour > 12) {
         amPm = 'PM';
         hour = hour - 12;
     }
@@ -38,7 +37,7 @@ var ticker;
 var nextOccurrence = -1;
 
 function startTicker() {
-    if(nextOccurrence == -1) return;
+    if (nextOccurrence == -1) return;
     ticker = setTimeout(function() {
         showNextOccurrence();
         startTicker();
@@ -47,14 +46,14 @@ function startTicker() {
 
 function showNextOccurrence() {
     var countdown = $('#countdown');
-    if(nextOccurrence === -1) {
+    if (nextOccurrence === -1) {
         countdown.text('No recurrence schedule has been set yet!');
     } else {
         var mom = moment(nextOccurrence);
         countdown.html('<b>Next recurrence:</b> ' + mom.format("h:mm A on dddd MMMM D, YYYY") + ' <i>(' + mom.fromNow() + ')</i>');
     }
 
-    if(nextOccurrence > -1 && new Date().getTime() > nextOccurrence) {
+    if (nextOccurrence > -1 && new Date().getTime() > nextOccurrence) {
         clearTimeout(ticker);
         console.log('Countdown reached, refreshing page');
         countdown.text('Feeder will activate in a few seconds!');
@@ -78,15 +77,14 @@ function refreshRemoveListeners() {
             hour: parseInt($(this).attr('hour')),
             minute: parseInt($(this).attr('minute'))
         };
-        alert(JSON.stringify(data, null, 4));
         post('/remove_occurrence', data, function(response, error) {
-            if(error) {
+            if (error) {
                 alert(error);
                 return;
             }
             refresh();
         });
-    }); 
+    });
 }
 
 function displaySchedule(schedule) {
@@ -108,19 +106,19 @@ function displaySchedule(schedule) {
     }
 
     var rows = neededRows(parsedSchedule);
-    for(var i = 0; i < rows; i++) {
+    for (var i = 0; i < rows; i++) {
         $('<tr><td dayid="6"/><td dayid="0"/><td dayid="1"/><td dayid="2"/><td dayid="3"/><td dayid="4"/><td dayid="5"/></tr>').insertBefore('tbody #add-recurrence-row');
     }
 
-    for(var key in parsedSchedule) {
+    for (var key in parsedSchedule) {
         var recur = parsedSchedule[key];
-        for(var rowIndex = 0; rowIndex < recur.length; rowIndex++) {
+        for (var rowIndex = 0; rowIndex < recur.length; rowIndex++) {
             var targetColumn = $('tbody tr:nth-child(' + (rowIndex + 1) + ') td[dayid=' + key + ']');
             if (targetColumn) {
                 var hour = recur[rowIndex].hour;
                 var minute = recur[rowIndex].minute;
-                targetColumn.append('<span>' + 
-                    toFriendlyTime(hour, minute) + 
+                targetColumn.append('<span>' +
+                    toFriendlyTime(hour, minute) +
                     '&nbsp;&nbsp;<a class="remove-recurrence" dayid="' + key + '" hour="' + hour + '" minute="' + minute + '">&times;</a>' +
                     '</span>');
             }
@@ -163,7 +161,7 @@ $('.add-recurrence').on('changeTime', function() {
         minute: date.getMinutes()
     };
     post('/add_occurrence', data, function(response, error) {
-        if(error) {
+        if (error) {
             alert(error);
             return;
         }
