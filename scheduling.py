@@ -9,14 +9,6 @@ from datetime import datetime as dt
 from date_utils import *
 from motor_util import MotorUtil
 
-MONDAY = 0
-TUESDAY = 1
-WEDNESDAY = 2
-THURSDAY = 3
-FRIDAY = 4
-SATURDAY = 5
-SUNDAY = 6
-
 IS_INIT = False
 
 def day_diff(src, dst, next_week=False):

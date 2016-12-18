@@ -4,16 +4,17 @@ from gpiozero import Motor, OutputDevice
 from time import sleep
 from datetime import datetime as dt
 from date_utils import right_now, subtract_days, date_str
+from constants import *
 
 IS_RUNNING = False
 LAST_RUN = subtract_days(right_now(), 1)
 
 class MotorUtil:
 	def __init__(self):
-		self.enable = OutputDevice(18)
-		self.motor = Motor(4, 17)
+		self.enable = OutputDevice(GPIO_PIN_ENABLE)
+		self.motor = Motor(GPIO_PIN_FORWARD, GPIO_PIN_BACKWARD)
 
-	def turn_motor(self, duration=5, speed=0.5):
+	def turn_motor(self, duration=MOTOR_DEFAULT_DURATION, speed=MOTOR_DEFAULT_SPEED):
 		"""Turns a Pi motor for the specified duration."""
 		global IS_RUNNING
 		global LAST_RUN
