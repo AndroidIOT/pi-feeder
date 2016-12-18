@@ -26,8 +26,6 @@ class MotorUtil:
 		if date_str(current_date) == date_str(LAST_RUN):
 			print("Already ran in this minute, ignoring.")
 			return
-		else:
-			print(date_str(current_date) + ' != ' + date_str(LAST_RUN))
 
 		LAST_RUN = right_now()
 		IS_RUNNING = True
