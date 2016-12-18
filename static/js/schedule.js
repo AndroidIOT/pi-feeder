@@ -69,6 +69,26 @@ function showNextOccurrence() {
     }
 }
 
+function refreshRemoveListeners() {
+    $('.remove-recurrence').unbind('click');
+    $('.remove-recurrence').click(function(e) {
+        e.preventDefault();
+        var data = {
+            day_id: parseInt($(this).attr('dayid')),
+            hour: parseInt($(this).attr('hour')),
+            minute: parseInt($(this).attr('minute'))
+        };
+        alert(JSON.stringify(data, null, 4));
+        post('/remove_occurrence', data, function(response, error) {
+            if(error) {
+                alert(error);
+                return;
+            }
+            refresh();
+        });
+    }); 
+}
+
 function displaySchedule(schedule) {
     var parsedSchedule = {
         0: [],
@@ -97,11 +117,17 @@ function displaySchedule(schedule) {
         for(var rowIndex = 0; rowIndex < recur.length; rowIndex++) {
             var targetColumn = $('tbody tr:nth-child(' + (rowIndex + 1) + ') td[dayid=' + key + ']');
             if (targetColumn) {
-                targetColumn.append('<span>' + toFriendlyTime(recur[rowIndex].hour, recur[rowIndex].minute) + "</span>");
+                var hour = recur[rowIndex].hour;
+                var minute = recur[rowIndex].minute;
+                targetColumn.append('<span>' + 
+                    toFriendlyTime(hour, minute) + 
+                    '&nbsp;&nbsp;<a class="remove-recurrence" dayid="' + key + '" hour="' + hour + '" minute="' + minute + '">&times;</a>' +
+                    '</span>');
             }
         }
     }
 
+    refreshRemoveListeners();
     startTicker();
 }
 

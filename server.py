@@ -3,8 +3,9 @@
 """The main HTTP server."""
 from flask import Flask, render_template, jsonify, session, escape, redirect, url_for, request
 from motor_util import MotorUtil
-import scheduling
 from auth import try_login, init_auth, try_change_password
+from datetime import timedelta
+import scheduling
 
 app = Flask(__name__, static_url_path='/static')
 
@@ -13,6 +14,11 @@ def intercept_login():
     """Intercepts every request and checks if the user is logged in."""
     if 'username' not in session and request.endpoint is not None and request.endpoint != 'login' and request.endpoint != 'static':
         return redirect(url_for('login'))
+    
+    # Sessions last for 30 minutes before having to login again
+    session.permanent = True
+    app.permanent_session_lifetime = timedelta(minutes=30)
+
     return
 
 @app.after_request
@@ -37,6 +43,19 @@ def add_occurrence():
     if not scheduling.add_occurrence(day_id, hour, minute):
         response = {'status': 'error', error: 'Cannot add a duplicate occurrence.'}
         return jsonify(**response)    
+
+    response = {'status': 'success'}
+    return jsonify(**response)
+
+@app.route('/remove_occurrence', methods=['POST'])
+def remove_occurrence():
+    """API: removes an occurrence from the recurrence schedule."""
+    content = request.get_json(silent=True)
+    day_id = content['day_id']
+    hour = content['hour']
+    minute = content['minute']
+
+    scheduling.remove_occurrence(day_id, hour, minute)
 
     response = {'status': 'success'}
     return jsonify(**response)

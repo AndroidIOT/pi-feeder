@@ -36,3 +36,9 @@ hr {
     color: #E53935;
     margin-bottom: 24px;
 }
+
+.remove-recurrence {
+    cursor: pointer;
+    font-size: 18px;
+    color: #E53935;
+}

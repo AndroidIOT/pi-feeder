@@ -106,6 +106,15 @@ def add_occurrence(day_id, hour, minute):
     conn.close()
     return True
 
+def remove_occurrence(day_id, hour, minute):
+    """Remove a recurrence from the database."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM recurrence WHERE day_id = ? AND hour = ? AND minute = ?', (day_id, hour, minute))
+    conn.commit()
+    conn.close()
+    return
+
 def get_next_occurrence():
     """Gets the next today/time for which the feeder will activate."""
     today = right_now()
