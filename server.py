@@ -4,27 +4,31 @@
 from flask import Flask, render_template, jsonify, session, escape, redirect, url_for, request
 from motor_util import MotorUtil
 import scheduling
-from auth import try_login, init_auth
+from auth import try_login, init_auth, try_change_password
 
 app = Flask(__name__, static_url_path='/static')
 
 @app.before_request
 def intercept_login():
+    """Intercepts every request and checks if the user is logged in."""
     if 'username' not in session and request.endpoint is not None and request.endpoint != 'login' and request.endpoint != 'static':
         return redirect(url_for('login'))
     return
 
 @app.after_request
 def add_header(response):
+    """Makes sure no requests are ever cached by browsers."""
     response.headers['Cache-Control'] = 'no-store'
     return response
 
 @app.route('/')
 def home():
+    """The homepage, after logging in."""
     return render_template('index.j2', show_menu=True, show_refresh=True)
 
 @app.route('/add_occurrence', methods=['POST'])
 def add_occurrence():
+    """API: adds an occurrence to the recurrence schedule."""
     content = request.get_json(silent=True)
     day_id = content['day_id']
     hour = content['hour']
@@ -39,6 +43,7 @@ def add_occurrence():
 
 @app.route('/schedule')
 def schedule():
+    """API: retrieves the full reoccurrence schedule."""
     date = scheduling.get_next_occurrence()
     nextOccurrence = -1
     if date is not None:
@@ -53,13 +58,15 @@ def schedule():
 
 @app.route('/activate', methods=['POST'])
 def activate():
+    """Triggers the feeder now."""
     MotorUtil().turn_motor()
     response = {'status': 'success'}
     return jsonify(**response)
 
-@app.route('/login', methods=['GET', 'POST'])   
-@app.route('/login/<error>', methods=['GET', 'POST'])   
+@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login/<error>', methods=['GET', 'POST'])
 def login(error=None):
+    """Loads the login page or performs login."""
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -73,8 +80,25 @@ def login(error=None):
             return redirect(url_for('home'))
         return render_template('login.j2', error_message=error, show_menu=False, show_refresh=False)
 
+@app.route('/settings', methods=['GET', 'POST'])
+@app.route('/settings/<error>', methods=['GET', 'POST'])
+def settings(error=None):
+    """Loads the settings page or saves settings.."""
+    if request.method == 'POST':
+        username = session['username']
+        current_password = request.form['current_password']
+        new_password = request.form['new_password']
+        confirm_password = request.form['confirm_password']
+        try_result = try_change_password(username, current_password, new_password, confirm_password)
+        if try_result is not None:
+            return render_template('settings.j2', error_message=try_result, show_menu=True, show_refresh=False)    
+        return redirect(url_for('home'))
+    else:
+        return render_template('settings.j2', error_message=error, show_menu=True, show_refresh=False)
+
 @app.route('/logout')
 def logout():
+    """Nullifies the session."""
     session.pop('username', None)
     return redirect(url_for('home'))
 

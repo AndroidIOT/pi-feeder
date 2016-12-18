@@ -112,7 +112,6 @@ def get_next_occurrence():
     # Will be today within the remaining hours/minutes, or another day in the current week.
     cmd = sform().format('SELECT * FROM recurrence WHERE (day_id = {0} AND hour > {1} AND minute > {2}) OR (day_id = {0} AND hour = {1} AND minute > {2}) OR (day_id > {0}) ORDER BY day_id, hour, minute', 
         today.weekday(), today.hour - 1, today.minute - 1)
-    print(cmd)
     cursor.execute(cmd)
     result = cursor.fetchone()
 
