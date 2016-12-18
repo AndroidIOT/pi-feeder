@@ -14,7 +14,9 @@ IS_INIT = False
 def day_diff(src, dst, next_week=False):
     if src == dst and next_week:
         return 7
-    elif dst > src:
+    src = src + 1
+    dst = dst + 1
+    if dst > src:
         return dst - src
     count = 0
     index = 0
@@ -23,6 +25,7 @@ def day_diff(src, dst, next_week=False):
         index = index + 1
         if index > 6: 
             index = 0
+    print(str(src) + " -> " + str(dst) + " = " + str(count))
     return count
 
 def check_should_activate(recurrence):
@@ -133,13 +136,17 @@ def get_next_occurrence():
         if result[0] == today.weekday():
             # today
             conn.close()
-            return dt(today.year, today.month, today.day, result[1], result[2])
+            target = dt(today.year, today.month, today.day, result[1], result[2])
+            print("Next recurrence is today: " + str(target))
+            return target
         else:
             # after today
             days_diff = day_diff(today.weekday(), result[0])
             target = add_days(today, days=days_diff)
             conn.close()
-            return dt(target.year, target.month, target.day, result[1], result[2])
+            finalTarget = dt(target.year, target.month, target.day, result[1], result[2])
+            print("Next recurrence is later this week: " + str(finalTarget))
+            return finalTarget
 
     if result is None:
         # Didn't find recurrence today or within the remaining week, check next week
@@ -153,7 +160,9 @@ def get_next_occurrence():
             days_diff = day_diff(today.weekday(), result[0], True)
             target = add_days(today, days_diff)
             conn.close()
-            return dt(target.year, target.month, target.day, result[1], result[2])
+            finalTarget = dt(target.year, target.month, target.day, result[1], result[2])
+            print("Next recurrence is next week (in " + str(days_diff) + " days): " + str(finalTarget))
+            return finalTarget
 
     conn.close()
     return None

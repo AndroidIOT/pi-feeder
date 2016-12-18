@@ -53,9 +53,10 @@ function showNextOccurrence() {
         countdown.html('<b>Next recurrence:</b> ' + mom.format("h:mm A on dddd MMMM D, YYYY") + ' <i>(' + mom.fromNow() + ')</i>');
     }
 
-    if (nextOccurrence > -1 && new Date().getTime() > nextOccurrence) {
+    var now = new Date().getTime();
+    if (nextOccurrence > -1 && now > nextOccurrence) {
         clearTimeout(ticker);
-        console.log('Countdown reached, refreshing page');
+        console.log('Countdown reached, refreshing page -> ' + now + ' > ' + nextOccurrence);
         countdown.text('Feeder will activate in a few seconds!');
         nextOccurrence = -1;
 
