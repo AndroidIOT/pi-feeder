@@ -1,9 +1,13 @@
 {% extends "base.j2" %}
+
 {% block content %}
+
     <button id="activate" class="waves-effect waves-light btn">Activate Now</button>
     <p id="countdown">Loading...</p>
+
     <hr/>
 
+    <h5>Recurrence Schedule</h5>
     <table class="responsive-table striped">
         <thead>
             <tr>
@@ -28,6 +32,12 @@
             </tr>
         </tbody>
     </table>
+
+    <hr/>
+    <h5 style="margin-bottom: 16px">One-Time Schedule</h5>
+    <table class="responsive-table striped" id="onetimes">
+    </table>
+    <p><a id="add-onetime-occurrence">Add One-Time Occurrence...</a></p>
 
 {% endblock %}
 {% block scripts %}

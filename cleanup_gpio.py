@@ -1,4 +1,5 @@
 #/usr/bin/python3
+"""This class will cleanup Pi GPIO references if needed. Not used by this program, should be run manually."""
 
 import RPi.GPIO as GPIO
 from time import sleep

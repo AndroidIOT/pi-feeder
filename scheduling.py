@@ -4,7 +4,6 @@
 import sqlite3
 import threading
 from time import sleep
-from string import Formatter as sform
 from datetime import datetime as dt
 from date_utils import *
 from motor_util import MotorUtil
@@ -25,7 +24,6 @@ def day_diff(src, dst, next_week=False):
         index = index + 1
         if index > 6: 
             index = 0
-    print(str(src) + " -> " + str(dst) + " = " + str(count))
     return count
 
 def check_should_activate(recurrence):
@@ -79,6 +77,7 @@ def init_scheduler():
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute('CREATE TABLE IF NOT EXISTS recurrence (day_id INTEGER NOT NULL, hour INTEGER NOT NULL, minute INTEGER NOT NULL)')
+    cursor.execute('CREATE TABLE IF NOT EXISTS onetimes (year INTEGER NOT NULL, month INTEGER NOT NULL, day INTEGER NOT NULL, hour INTEGER NOT NULL, minute INTEGER NOT NULL)')
     conn.commit()
     conn.close()
 
@@ -91,6 +90,15 @@ def get_recurrence_schedule():
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM recurrence ORDER BY day_id, hour, minute')
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
+def get_onetime_occurrence_schedule():
+    """Gets the one-time ocurrence schedule."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM onetimes ORDER BY year, month, day, hour, minute')
     rows = cursor.fetchall()
     conn.close()
     return rows
@@ -109,7 +117,7 @@ def add_occurrence(day_id, hour, minute):
     conn.close()
     return True
 
-def remove_occurrence(day_id, hour, minute):
+def remove_recurrence(day_id, hour, minute):
     """Remove a recurrence from the database."""
     conn = get_connection()
     cursor = conn.cursor()
@@ -118,7 +126,42 @@ def remove_occurrence(day_id, hour, minute):
     conn.close()
     return
 
+def add_onetime_occurrence(year, month, day, hour, minute):
+    """Adds a one-time ocurrence to the database."""
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute('SELECT * FROM onetimes WHERE year = ? AND month = ? AND day = ? AND hour = ? AND minute = ?', (year, month, day, hour, minute))
+    if cursor.fetchone() is not None:
+        return False
+
+    cursor.execute('INSERT INTO onetimes (year, month, day, hour, minute) VALUES (?, ?, ?, ?, ?);', (year, month, day, hour, minute))
+    conn.commit()
+    conn.close()
+    return True
+
+def remove_onetime_occurrence(year, month, day, hour, minute):
+    """Remove a onetime occurrence from the database."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM onetimes WHERE year = ? AND month = ? AND day = ? AND hour = ? AND minute = ?', (year, month, day, hour, minute))
+    conn.commit()
+    conn.close()
+    return
+
 def get_next_occurrence():
+    next_recurrence = get_next_recurrence()
+    next_onetime = get_next_onetime_occurrence()
+
+    if next_recurrence is None:
+        return next_onetime
+    elif next_onetime is None:
+        return next_recurrence
+    elif next_onetime > next_recurrence:
+        return next_onetime
+    return next_recurrence
+
+def get_next_recurrence():
     """Gets the next today/time for which the feeder will activate."""
     today = right_now()
     conn = get_connection()
@@ -126,8 +169,10 @@ def get_next_occurrence():
 
     # Try to find a next occurrence in the current week (before an ending Sunday).
     # Will be today within the remaining hours/minutes, or another day in the current week.
-    cmd = sform().format('SELECT * FROM recurrence WHERE (day_id = {0} AND hour > {1} AND minute > {2}) OR (day_id = {0} AND hour = {1} AND minute > {2}) OR (day_id > {0}) ORDER BY day_id, hour, minute', 
-        today.weekday(), today.hour - 1, today.minute - 1)
+    cmd = '''SELECT * FROM recurrence WHERE 
+        (day_id = {0} AND 
+        hour >= {1} AND minute >= {2}) OR 
+        (day_id > {0}) ORDER BY day_id, hour, minute'''.format(today.weekday(), today.hour, today.minute)
     cursor.execute(cmd)
     result = cursor.fetchone()
 
@@ -150,8 +195,11 @@ def get_next_occurrence():
 
     if result is None:
         # Didn't find recurrence today or within the remaining week, check next week
-        cmd = sform().format('SELECT * FROM recurrence WHERE (day_id < {0}) OR (day_id = {0} AND hour = {1} AND minute < {2}) OR (day_id = {0} AND hour < {1}) ORDER BY day_id, hour, minute',
-            today.weekday(), today.hour, today.minute)
+        cmd = '''SELECT * FROM recurrence WHERE 
+            (day_id < {0}) OR 
+            (day_id = {0} AND hour = {1} AND minute < {2}) OR 
+            (day_id = {0} AND hour < {1}) 
+            ORDER BY day_id, hour, minute'''.format(today.weekday(), today.hour, today.minute)
         cursor.execute(cmd)
         result = cursor.fetchone()
 
@@ -167,3 +215,24 @@ def get_next_occurrence():
     conn.close()
     return None
     
+def get_next_onetime_occurrence():
+    """Gets the next one-time occurrence for which the feeder will activate."""
+    today = right_now()
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cmd = '''SELECT * FROM onetimes WHERE 
+        (year >= {0}) OR
+        (year = {0} AND month >= {1}) OR 
+        (year = {0} AND month = {1} AND day >= {2}) OR 
+        (year = {0} AND month = {1} AND day = {2} AND hour >= {3}) OR 
+        (year = {0} AND month = {1} AND day = {2} AND hour = {3} AND minute >= {4})  
+        ORDER BY year, month, day, hour, minute'''.format(today.year, today.month, today.day, today.hour, today.minute)
+
+    cursor.execute(cmd)
+    result = cursor.fetchone()
+    conn.close()
+
+    if result is None:
+        return None
+    return dt(result[0], result[1], result[2], result[3], result[4])

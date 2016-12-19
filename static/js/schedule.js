@@ -18,6 +18,12 @@ function neededRows(parsedSchedule) {
     return largest;
 }
 
+function toFriendlyDateTime(year, month, day, hour, minute) {
+    var dateStr = moment(month + '/' + day + '/' + year, 'M/D/YYYY').format('MMMM DD YYYY');
+    console.log(dateStr);
+    return dateStr + ' - ' + toFriendlyTime(hour, minute);
+}
+
 function toFriendlyTime(hour, minute) {
     var amPm = 'AM';
     if (hour === 0) {
@@ -47,10 +53,10 @@ function startTicker() {
 function showNextOccurrence() {
     var countdown = $('#countdown');
     if (nextOccurrence === -1) {
-        countdown.text('No recurrence schedule has been set yet!');
+        countdown.text('Add occurrences to your schedule!');
     } else {
         var mom = moment(nextOccurrence);
-        countdown.html('<b>Next recurrence:</b> ' + mom.format("h:mm A on dddd MMMM D, YYYY") + ' <i>(' + mom.fromNow() + ')</i>');
+        countdown.html('<b>Next activation:</b> ' + mom.format("h:mm A on dddd MMMM D, YYYY") + ' <i>(' + mom.fromNow() + ')</i>');
     }
 
     var now = new Date().getTime();
@@ -78,7 +84,26 @@ function refreshRemoveListeners() {
             hour: parseInt($(this).attr('hour')),
             minute: parseInt($(this).attr('minute'))
         };
-        post('/remove_occurrence', data, function(response, error) {
+        post('/remove_recurrence', data, function(response, error) {
+            if (error) {
+                alert(error);
+                return;
+            }
+            refresh();
+        });
+    });
+
+    $('.remove-occurrence').unbind('click');
+    $('.remove-occurrence').click(function(e) {
+        e.preventDefault();
+        var data = {
+            year: parseInt($(this).attr('year')),
+            month: parseInt($(this).attr('month')),
+            day: parseInt($(this).attr('day')),
+            hour: parseInt($(this).attr('hour')),
+            minute: parseInt($(this).attr('minute'))
+        };
+        post('/remove_onetime_occurrence', data, function(response, error) {
             if (error) {
                 alert(error);
                 return;
@@ -88,7 +113,7 @@ function refreshRemoveListeners() {
     });
 }
 
-function displaySchedule(schedule) {
+function displaySchedule(schedule, onetimes) {
     var parsedSchedule = {
         0: [],
         1: [],
@@ -126,6 +151,22 @@ function displaySchedule(schedule) {
         }
     }
 
+    var onetimesTable = $('#onetimes');
+    onetimesTable.empty();
+    for (var i = 0; i < onetimes.length; i++) {
+        var occur = onetimes[i];
+        var year = occur.year;
+        var month = occur.month;
+        var day = occur.day;
+        var hour = occur.hour;
+        var minute = occur.minute;
+
+        onetimesTable.append('<tr><td><span style="padding-top: 8px; padding-bottom: 8px">' +
+            toFriendlyDateTime(year, month, day, hour, minute) +
+            '&nbsp;&nbsp;<a class="remove-occurrence" year="' + year + '" month="' + month + '" day="' + day + '" hour="' + hour + '" minute="' + minute + '">&times;</a>' +
+            '</span></td></tr>');
+    }
+
     refreshRemoveListeners();
     startTicker();
 }
@@ -137,7 +178,7 @@ function refresh() {
     get('/schedule', function(response, err) {
         nextOccurrence = response.next_occurrence;
         showNextOccurrence();
-        displaySchedule(response.schedule);
+        displaySchedule(response.schedule, response.onetimes);
     });
 }
 
@@ -161,7 +202,7 @@ $('.add-recurrence').on('changeTime', function() {
         hour: date.getHours(),
         minute: date.getMinutes()
     };
-    post('/add_occurrence', data, function(response, error) {
+    post('/add_recurrence', data, function(response, error) {
         if (error) {
             alert(error);
             return;
@@ -173,4 +214,11 @@ $('.add-recurrence').on('changeTime', function() {
 $('.add-recurrence').click(function(e) {
     e.preventDefault();
     $(this).timepicker('show');
+});
+
+$('#add-onetime-occurrence').click(function(e) {
+    e.preventDefault();
+    $('#modal').load('/add_onetime_occurrence', function(responseText, textStatus, xhr) {
+        $('.modal').modal('open');
+    });
 });

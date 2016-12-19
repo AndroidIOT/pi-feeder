@@ -4,12 +4,17 @@
     {% block head %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/css/materialize.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/materialize.clockpicker.css') }}" />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}" />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.timepicker.css') }}" />
     <title>Pi Feeder</title>
+    <meta name="theme-color" content="#2196F3">
     {% endblock %}
 </head>
 <body>
+    <div id="modal" class="modal">
+    </div>
+
     <ul id="dropdown1" class="dropdown-content">
         <li><a href="/settings">Settings</a></li>
         <li class="divider"></li>
@@ -36,6 +41,12 @@
     <script src="http://momentjs.com/downloads/moment.min.js"></script>
     <script src="{{ url_for('static', filename='js/jquery.timepicker.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/networking.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/materialize.clockpicker.js') }}"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('.modal').modal();
+        });
+    </script>
 
     {% block scripts %}{% endblock %}
 </body>
