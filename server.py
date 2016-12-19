@@ -6,6 +6,7 @@ from motor_util import MotorUtil
 from auth import try_login, init_auth, try_change_password
 from datetime import timedelta
 import scheduling
+from discovery import init_visibility
 
 app = Flask(__name__, static_url_path='/static')
 
@@ -162,6 +163,7 @@ def logout():
 if __name__ == '__main__':
     scheduling.init_scheduler()
     init_auth()
+    init_visibility()
     app.secret_key = 'a3ddad8e-2288-414e-9d7d-c5dd9018fef0'
     app.run(debug=True, host='0.0.0.0')
     

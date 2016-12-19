@@ -48,15 +48,19 @@ def get_required_sleep():
 def ticker():
     """The ticker which checks if a schedule moment has been reached."""
     print("Started!")
-    while True:
-        next_occurrence = get_next_occurrence()
-        if next_occurrence is not None:
-            if check_should_activate(next_occurrence):
-                print("Schedule has triggered!")
-                # Remove one-time occurrence if any
-                remove_onetime_occurrence(next_occurrence.year, next_occurrence.month, next_occurrence.day, next_occurrence.hour, next_occurrence.minute)
-                MotorUtil().turn_motor()
-        sleep(get_required_sleep())
+    global IS_INIT
+    while IS_INIT:
+        try:
+            next_occurrence = get_next_occurrence()
+            if next_occurrence is not None:
+                if check_should_activate(next_occurrence):
+                    print("Schedule has triggered!")
+                    # Remove one-time occurrence if any
+                    remove_onetime_occurrence(next_occurrence.year, next_occurrence.month, next_occurrence.day, next_occurrence.hour, next_occurrence.minute)
+                    MotorUtil().turn_motor()
+            sleep(get_required_sleep())
+        except KeyboardInterrupt:
+            break
     print("Ticker has quit!")
     return
 
@@ -68,7 +72,6 @@ def get_connection():
 
 def init_scheduler():
     """Creates database tables if they don't already exist."""
-
     global IS_INIT
     if IS_INIT:
         print("Scheduler was already initialized!")
@@ -85,6 +88,11 @@ def init_scheduler():
 
     print("Starting ticker...")
     THREAD.start()
+    return
+
+def deinit_scheduler():
+    global IS_INIT
+    IS_INIT = False
     return
 
 def get_recurrence_schedule():
