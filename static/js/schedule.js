@@ -71,7 +71,7 @@ function showNextOccurrence() {
         setTimeout(function() {
             activateBtn.removeAttr('disabled');
             refresh();
-        }, 2000);
+        }, 5000);
     }
 }
 

@@ -10,11 +10,21 @@ $('.timepicker').pickatime({
     container: 'body'
 });
 
-$('#modal-submit').click(function() {
+$('#modal-submit').click(function(e) {
+    e.preventDefault();
     var date = $('#date').val();
     var time = $('#time').val();
-    var dateTime = moment(date + ' ' + time).toDate();
 
+    if (!date || date.trim().length === 0) {
+        $('#modal').load('/add_onetime_occurrence/' + escape('Please select a date.'));
+        return;
+    }
+    if (!time || time.trim().length === 0) {
+        $('#modal').load('/add_onetime_occurrence/' + escape('Please select a time.'));
+        return;
+    }
+
+    var dateTime = moment(date + ' ' + time).toDate();
     var data = {
         year: dateTime.getFullYear(),
         month: dateTime.getMonth() + 1,
@@ -28,9 +38,10 @@ $('#modal-submit').click(function() {
     post('/add_onetime_occurrence', data, function(response, error) {
         if (error) {
             btn.removeAttr('disabled');
-            alert(error);
+            window.location.href = '/add_onetime_occurrence/' + escape(error);
             return;
         }
         refresh();
+        $('#modal').modal('close');
     });
 });
