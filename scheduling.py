@@ -29,7 +29,7 @@ def day_diff(src, dst, next_week=False):
 def check_should_activate(recurrence):
     """Checks if the feeder should be activated right now."""
     now = right_now()
-    return int(recurrence.weekday()) == int(now.weekday()) and int(recurrence.hour) == int(now.hour) and int(recurrence.minute) == int(now.minute)
+    return recurrence.year == now.year and recurrence.month == now.month and recurrence.day == now.day and recurrence.hour == now.hour and recurrence.minute == now.minute
 
 def get_required_sleep():
     """Helps sync up ticker delaying to run on 15 minute clock intervals (12:00, 12:15, 12:30, 12:45, 1:00, ...). Returns seconds."""
@@ -53,6 +53,8 @@ def ticker():
         if next_occurrence is not None:
             if check_should_activate(next_occurrence):
                 print("Schedule has triggered!")
+                # Remove one-time occurrence if any
+                remove_onetime_occurrence(next_occurrence.year, next_occurrence.month, next_occurrence.day, next_occurrence.hour, next_occurrence.minute)
                 MotorUtil().turn_motor()
         sleep(get_required_sleep())
     print("Ticker has quit!")
