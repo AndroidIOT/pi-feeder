@@ -165,5 +165,5 @@ if __name__ == '__main__':
     init_auth()
     init_visibility()
     app.secret_key = 'a3ddad8e-2288-414e-9d7d-c5dd9018fef0'
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0', use_reloader=False)
     

@@ -7,8 +7,8 @@ PORT = 5001
 PACKET_SIZE = 1024
 VERSION = '1.0'
 
-def process_message(json, sender):
-    message_type = json['type']
+def process_message(message_json, sender):
+    message_type = message_json['type']
     if message_type == 'discovery':
         print('Received discovery request from', sender)
         response = { 'type': 'discovered', 'firmware': VERSION }
@@ -28,11 +28,12 @@ def receiver():
             sender_addr = packet[1][0]
             message_json = json.loads(message)
             process_message(message_json, sender_addr)
-        except json.decoder.JSONDecodeError:
-            continue
         except KeyboardInterrupt:
             break
+        except:
+            continue
     print('Ending discovery visibility!')
+    server.close()
     return
 
 THREAD = threading.Thread(target=receiver)
@@ -51,7 +52,7 @@ def deinit_visibility():
     IS_INIT = False
     return
 
-def send_broadcast(message):
+def send_broadcast(message, wait_response=False):
     client = socket(AF_INET, SOCK_DGRAM)
     client.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
     client.sendto(bytes(message, 'utf-8'), ('255.255.255.255', PORT))
