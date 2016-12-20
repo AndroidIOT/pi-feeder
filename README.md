@@ -12,6 +12,7 @@ Install dependencies using `pip`, preferably `pip3` since this server needs to b
 * bcrypt
 * tzlocal
 * dateutil
+* time_uuid
 
 ### Running
 

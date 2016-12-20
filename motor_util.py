@@ -5,6 +5,7 @@ from time import sleep
 from datetime import datetime as dt
 from date_utils import right_now, subtract_days, date_str
 from constants import *
+import threading
 
 IS_RUNNING = False
 LAST_RUN = subtract_days(right_now(), 1)
@@ -13,6 +14,11 @@ class MotorUtil:
 	def __init__(self):
 		self.enable = OutputDevice(GPIO_PIN_ENABLE)
 		self.motor = Motor(GPIO_PIN_FORWARD, GPIO_PIN_BACKWARD)
+
+	def turn_motor_async(self, duration=MOTOR_DEFAULT_DURATION, speed=MOTOR_DEFAULT_SPEED):
+		runner = threading.Thread(target=self.turn_motor, args=(duration,speed))
+		runner.start()
+		return
 
 	def turn_motor(self, duration=MOTOR_DEFAULT_DURATION, speed=MOTOR_DEFAULT_SPEED):
 		"""Turns a Pi motor for the specified duration."""
@@ -39,3 +45,4 @@ class MotorUtil:
 
 		IS_RUNNING = False
 		print("Motor going to idle.")
+		return
